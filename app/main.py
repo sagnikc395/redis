@@ -7,8 +7,13 @@ def main():
 
     # Uncomment this to pass the first stage
     #
-    # server_socket = socket.create_server(("localhost", 6379), reuse_port=True)
-    # server_socket.accept() # wait for client
+    server_socket = socket.create_server(("localhost", 6379), reuse_port=True)
+    conn, addr = server_socket.accept() # wait for client
+    print(f"Accepted connection from {addr}")
+
+    conn.close()
+    server_socket.close()
+
 
 
 if __name__ == "__main__":
