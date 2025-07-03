@@ -11,7 +11,15 @@ def main():
     conn, addr = server_socket.accept() # wait for client
     # print(f"Accepted connection from {addr}")
     # send the response to PING
-    conn.sendall(b"+PONG\r\n")
+    # conn.sendall(b"+PONG\r\n")
+    while True:
+        data = conn.recv(1024).decode()
+        if not data:
+            break
+        pongs = data.split("\n")
+        for _ in pongs:
+            conn.send(b"+PONG\r\n")
+
     conn.close()
     server_socket.close()
 
