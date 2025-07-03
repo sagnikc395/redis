@@ -17,8 +17,8 @@ def main():
         if not data:
             break
         data = data.split("\n")
-        pongs = [i for i in data if i=="+PONG"]
-        for _ in pongs:
+        pong_count = data.count("PONG")
+        for k in range(pong_count):
             conn.send(b"+PONG\r\n")
 
     conn.close()
