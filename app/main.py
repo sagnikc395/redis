@@ -16,7 +16,8 @@ def main():
         data = conn.recv(1024).decode()
         if not data:
             break
-        pongs = data.split("\n")
+        data = data.split("\n")
+        pongs = [i for i in data if i=="+PONG"]
         for _ in pongs:
             conn.send(b"+PONG\r\n")
 
