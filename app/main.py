@@ -13,13 +13,14 @@ def main():
     # send the response to PING
     # conn.sendall(b"+PONG\r\n")
     while True:
-        data = conn.recv(1024).decode()
+        data = conn.recv(1024)
         if not data:
             break
-        data = data.split("\n")
-        pong_count = data.count("PONG")
-        for k in range(pong_count):
-            conn.send(b"+PONG\r\n")
+        lines = data.decode().split("\n")
+        for line in lines:
+            cmd = line.strip().upper()
+            if cmd == "PING":
+                conn.sendall(b"+PONG\r\n")
 
     conn.close()
     server_socket.close()
