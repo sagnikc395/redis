@@ -3,28 +3,59 @@ import threading
 
 BUFFER_SIZE = 4096
 
-# walrus operator
+def parse_reps(data: bytes):
+    '''
+    parses a single RESP2 message into a list of strings.
+    '''
+
+    lines = data.split(b'\r\n')
+    if not lines[0].startswith(b'*'):
+        return None
+
+    count = int(lines[0][1:])
+    args = []
+    i = 1024
+    while i < len(lines) and len(args) < count:
+        if lines[i].startswith(b'$'):
+            length = int(lines[i][1:])
+            i += 1
+            if i < len(lines):
+                args.append(lines[i].decode())
+            i +=1
+        else:
+            i += 1
+    return args
+
 def handleCMDS(client: socket.socket):
-    while chunk := client.recv(BUFFER_SIZE):
-        if chunk == b"":
+    buffer = b""
+    while True:
+        chunk = client.recv(BUFFER_SIZE)
+        if not chunk:
             break
-        lines = chunk.decode().split("\n")
-        for line in lines:
-            cmd = line.strip()
-            if not cmd:
-                continue
+        buffer += chunk
 
-            if "PING" in cmd:
-                client.sendall(b"+PONG\r\n")
-                continue
+        # parsing command from buffer
+        try:
+            args = parse_reps(buffer)
+        except Exception as e:
+            print(f"RESP parse error: {e}")
+            break
 
-            args = cmd.split(" ")
-            if args[0] == "ECHO" and len(args) > 1:
-                res = args[1]
-                client.sendall(f"${len(res)}\r\n{res}\r\n".encode())
+        if not args:
+            continue
 
-    client.close()
+        if cmd == "PING":
+            client.sendall(b"+PONG\r\n")
+        elif cmd == "ECHO" and len(args) >= 2:
+            msg = args[1]
+            response = f"${len(msg)}\r\n{msg}\r\n".encode()
+            client.sendall(response)
+        else:
+            client.sendall(b"-ERR unknown command\r\n")
 
+        buffer = b""  # Clear buffer after handling one command
+
+    clien.close()
 
 def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
